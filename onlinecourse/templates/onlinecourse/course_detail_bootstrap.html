@@ -51,6 +51,11 @@
                 {% endfor %}
             </div>
             <!-- Course detail template changes go here -->
+            {% if user.is_authenticated %}
+        </br> 
+
+        {% endif %}
+
     </div>
 </body>
 </html>
