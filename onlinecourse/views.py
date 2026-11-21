@@ -113,7 +113,7 @@ def enroll(request, course_id):
 def submit(request, course_id):
     user = request.user 
     course = Course.objects.get(id=course_id)
-    enrrolment = Enrollment.object.get(user=user, course=course)
+    enrrolment = Enrollment.objects.get(user=user, course=course)
 
     submission = Submission.objects.create(enrollment=enrrolment)
     choices = extract_answers(request)
