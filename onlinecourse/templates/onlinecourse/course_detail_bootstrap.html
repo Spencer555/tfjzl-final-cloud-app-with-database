@@ -1,72 +1,320 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-     {% load static %}
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    {% load static %}
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{{ course.name }}</title>
+
+    <link rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <meta charset="UTF-8">
+
 </head>
 
 <body>
-    <!-- Navigation bar -->
+
+    <!-- NAVIGATION BAR -->
     <nav class="navbar navbar-light bg-light">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                  <a class="navbar-brand" href="{% url 'onlinecourse:index' %}">Home</a>
-            </div>
-            <ul class="nav navbar-nav navbar-right">
+
+        <div class="container">
+
+            <a class="navbar-brand"
+                href="{% url 'onlinecourse:index' %}">
+                Online Courses
+            </a>
+
+            <ul class="navbar-nav flex-row">
+
                 {% if user.is_authenticated %}
-                <li>
-                    <a class="btn btn-link" href="#">{{ user.first_name }}({{ user.username }})</a>
-                    <a class="btn btn-link" href="{% url 'onlinecourse:logout' %}">Logout</a>
+
+                <li class="nav-item mr-3">
+                    <span class="nav-link">
+                        {{ user.first_name }} ({{ user.username }})
+                    </span>
                 </li>
+
+                <li class="nav-item">
+                    <a class="btn btn-outline-danger"
+                        href="{% url 'onlinecourse:logout' %}">
+                        Logout
+                    </a>
+                </li>
+
                 {% else %}
-                <li>
-                    <form class="form-inline" action="{% url 'onlinecourse:login' %}" method="post">
-                        {% csrf_token %}
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Username" name="username" >
-                            <input type="password" class="form-control" placeholder="Username" name="psw" >
-                            <button class="btn btn-primary" type="submit">Login</button>
-                            <a class="btn btn-link" href="{% url 'onlinecourse:registration' %}">Sign Up</a>
-                        </div>
-                    </form>
+
+                <li class="nav-item">
+                    <a class="btn btn-primary"
+                        href="{% url 'onlinecourse:login' %}">
+                        Login
+                    </a>
                 </li>
+
+                <li class="nav-item ml-2">
+                    <a class="btn btn-outline-primary"
+                        href="{% url 'onlinecourse:registration' %}">
+                        Sign Up
+                    </a>
+                </li>
+
                 {% endif %}
+
             </ul>
+
         </div>
+
     </nav>
 
-   <!-- Page content -->
-    {% if user.is_authenticated %}
-    </br>
-    <button class="btn btn-primary btn-block" data-toggle="collapse" data-target="#exam">Start Exam</button>
-    <div id="exam" class="collapse">
-        <form id="questionform" action="{% url 'onlinecourse:submit' course.id %}" method="POST">
-            {% for question in course.question_set.all %}
-            <div class="card mt-1">
-                <div class="card-header">
-                    <h5>{{ question.content }}</h5>
+
+    <!-- MAIN CONTENT -->
+    <div class="container mt-5">
+
+        <!-- COURSE DETAILS -->
+        <div class="card shadow-sm mb-4">
+
+            {% if course.image %}
+
+            <img src="{{ course.image.url }}"
+                class="card-img-top"
+                alt="{{ course.name }}"
+                style="height: 300px; object-fit: cover;">
+
+            {% endif %}
+
+            <div class="card-body">
+
+                <h2 class="card-title">
+                    {{ course.name }}
+                </h2>
+
+                <p class="text-muted">
+                    Published: {{ course.pub_date }}
+                </p>
+
+                <hr>
+
+                <h5>Course Description</h5>
+
+                <p class="card-text">
+                    {{ course.description }}
+                </p>
+
+                <div class="mt-3">
+
+                    <span class="badge badge-primary p-2">
+                        {{ course.total_enrollment }} Learners Enrolled
+                    </span>
+
                 </div>
-                {% csrf_token %}
-                <div class="form-group">
-                    {% for choice in question.choice_set.all %}
-                    <div class="form-check">
-                        <label class="form-check-label">
-                            <input type="checkbox" name="choice_{{choice.id}}" class="form-check-input"
-                                id="{{choice.id}}" value="{{choice.id}}">{{ choice.content }}
-                        </label>
-                    </div>
-                    {% endfor %}
-                </div>
+
             </div>
-            {% endfor %}
-            <input class="btn btn-success btn-block" type="submit" value="Submit">
-        </form>
+
+        </div>
+
+
+        <!-- COURSE INSTRUCTORS -->
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-header bg-info text-white">
+
+                <h5 class="mb-0">
+                    Course Instructors
+                </h5>
+
+            </div>
+
+            <div class="card-body">
+
+                {% for instructor in course.instructors.all %}
+
+                <div class="mb-2">
+
+                    <strong>{{ instructor.user.username }}</strong>
+
+                    {% if instructor.full_time %}
+                        <span class="badge badge-success">
+                            Full Time
+                        </span>
+                    {% else %}
+                        <span class="badge badge-secondary">
+                            Part Time
+                        </span>
+                    {% endif %}
+
+                </div>
+
+                {% empty %}
+
+                <p>No instructors assigned yet.</p>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+
+        <!-- RELATED LESSONS -->
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-header bg-primary text-white">
+
+                <h4 class="mb-0">
+                    Course Lessons
+                </h4>
+
+            </div>
+
+            <div class="card-body">
+
+                {% for lesson in course.lesson_set.all %}
+
+                <div class="card mb-3">
+
+                    <div class="card-body">
+
+                        <div class="d-flex justify-content-between">
+
+                            <h5 class="card-title">
+                                {{ lesson.title }}
+                            </h5>
+
+                            <span class="badge badge-primary">
+                                Lesson {{ lesson.order }}
+                            </span>
+
+                        </div>
+
+                        <p class="card-text">
+                            {{ lesson.content }}
+                        </p>
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <div class="alert alert-info">
+                    No lessons are available for this course.
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+
+        <!-- EXAM SECTION -->
+        {% if user.is_authenticated %}
+
+        <div class="card shadow-sm mb-5">
+
+            <div class="card-header bg-success text-white">
+
+                <h4 class="mb-0">
+                    Course Examination
+                </h4>
+
+            </div>
+
+            <div class="card-body">
+
+                <p>
+                    Test your knowledge by answering the questions below.
+                </p>
+
+                <button class="btn btn-primary btn-block"
+                    data-toggle="collapse"
+                    data-target="#exam">
+
+                    Start Exam
+
+                </button>
+
+
+                <div id="exam" class="collapse mt-4">
+
+                    <form id="questionform"
+                        action="{% url 'onlinecourse:submit' course.id %}"
+                        method="POST">
+
+                        {% csrf_token %}
+
+                        {% for question in course.question_set.all %}
+
+                        <div class="card mb-3">
+
+                            <div class="card-header">
+
+                                <h5>
+                                    {{ question.content }}
+                                </h5>
+
+                            </div>
+
+                            <div class="card-body">
+
+                                {% for choice in question.choice_set.all %}
+
+                                <div class="form-check mb-2">
+
+                                    <label class="form-check-label">
+
+                                        <input type="checkbox"
+                                            name="choice_{{ choice.id }}"
+                                            class="form-check-input"
+                                            id="{{ choice.id }}"
+                                            value="{{ choice.id }}">
+
+                                        {{ choice.content }}
+
+                                    </label>
+
+                                </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+                        {% endfor %}
+
+                        <button type="submit"
+                            class="btn btn-success btn-block">
+
+                            Submit Examination
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <div class="alert alert-warning">
+
+            Please log in to take the course examination.
+
+        </div>
+
+        {% endif %}
+
     </div>
-    {% endif %}
 
 </body>
+
 </html>
