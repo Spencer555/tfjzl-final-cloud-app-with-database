@@ -96,42 +96,61 @@ class Enrollment(models.Model):
 
 
 
-
-
-# question model
+# Question Model
 class Question(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    content = models.CharField(max_length=200)
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE
+    )
+
+    question_text = models.CharField(max_length=200)
+
     grade = models.IntegerField(default=50)
 
-    def str(self):
-       return "Question: " + self.content
+    def __str__(self):
+        return self.question_text
 
-
-    	# method to calculate if the learner gets the score of the question
     def is_get_score(self, selected_ids):
-        all_answers = self.choice_set.filter(is_correct=True).count()
-        selected_correct = self.choice_set.filter(is_correct=True, id__in=selected_ids).count()
-        if all_answers == selected_correct:
-            return True
-        else:
-            return False
 
-# choice model 
+        correct_answers = self.choice_set.filter(
+            is_correct=True
+        )
+
+        selected_answers = self.choice_set.filter(
+            id__in=selected_ids
+        )
+
+        return (
+            correct_answers.count() == selected_answers.count()
+            and not selected_answers.exclude(
+                is_correct=True
+            ).exists()
+        )
+
+
+# Choice Model
 class Choice(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    content = models.CharField(max_length=200)
+    question = models.ForeignKey(
+        Question,
+        on_delete=models.CASCADE
+    )
+
+    choice_text = models.CharField(max_length=200)
+
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
-        return "Choice" 
-is_correctnt + self.cis.conte+ self
-# One enrollment could have multiple submission
-# One submission could have multiple choices
-# One choice could belong to multiple submissions
-class Submission(models.Model):
-   enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
-   choices = models.ManyToManyField(Choice)
+        return self.choice_text
 
-   def __str__(self):
-    return 'submission done' + self.id
+
+# Submission Model
+class Submission(models.Model):
+    enrollment = models.ForeignKey(
+        Enrollment,
+        on_delete=models.CASCADE
+    )
+
+    choices = models.ManyToManyField(Choice)
+
+    def __str__(self):
+        return f"Submission {self.pk}"
